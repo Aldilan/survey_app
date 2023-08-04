@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:survey_app/modules/survey_titik_kamera/detail/detail_survey_titik_kamera.dart';
 
 class TitikCard extends StatelessWidget {
-  const TitikCard({super.key});
+  final dynamic titikData;
+  const TitikCard({super.key, required this.titikData});
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        Get.toNamed('/detail_titik');
+        Get.to(DetailTitik(titikData: titikData));
       },
       child: Container(
         margin: EdgeInsets.only(bottom: 10),
@@ -22,7 +24,7 @@ class TitikCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Pojok Kanan',
+              titikData['Judul_Titik'],
               style: TextStyle(
                   color: Colors.white,
                   fontSize: 18,

@@ -22,9 +22,6 @@ class MyApp extends StatelessWidget {
       getPages: [
         GetPage(name: '/', page: () => HomePage()),
         GetPage(name: '/form_survey', page: () => FormSurvey()),
-        GetPage(name: '/detail_survey', page: () => DetailSurvey()),
-        GetPage(name: '/form_titik', page: () => FormTitik()),
-        GetPage(name: '/detail_titik', page: () => DetailTitik())
       ],
     );
   }

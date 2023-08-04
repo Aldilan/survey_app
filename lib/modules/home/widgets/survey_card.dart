@@ -1,14 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:survey_app/modules/survey/detail/detail_survey.dart';
 
 class SurveyCard extends StatelessWidget {
-  const SurveyCard({super.key});
+  final dynamic surveyData;
+  const SurveyCard({super.key, required this.surveyData});
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        Get.toNamed('/detail_survey');
+        Get.to(DetailSurvey(
+          surveyData: surveyData,
+        ));
       },
       child: Container(
         margin: EdgeInsets.only(bottom: 10),
@@ -27,7 +31,7 @@ class SurveyCard extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
-                    'Pemasangan CCTV di SMK Wikrama',
+                    surveyData['Nama_Projek'],
                     style: TextStyle(
                         color: Colors.white,
                         fontSize: 18,
@@ -43,7 +47,7 @@ class SurveyCard extends StatelessWidget {
                       color: Colors.green,
                       borderRadius: BorderRadius.circular(10)),
                   child: Text(
-                    'Active',
+                    surveyData['Status_Survey'],
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 15,
@@ -67,7 +71,7 @@ class SurveyCard extends StatelessWidget {
                   width: 3,
                 ),
                 Text(
-                  'Bogor',
+                  surveyData['Alamat'],
                   style: TextStyle(color: Colors.white, fontSize: 15),
                 )
               ],
@@ -87,7 +91,7 @@ class SurveyCard extends StatelessWidget {
                   width: 3,
                 ),
                 Text(
-                  'wikrama@sch.id',
+                  surveyData['Email'],
                   style: TextStyle(color: Colors.white, fontSize: 15),
                 )
               ],
@@ -107,7 +111,7 @@ class SurveyCard extends StatelessWidget {
                   width: 3,
                 ),
                 Text(
-                  '08023948334',
+                  surveyData['Nomor_Telpon'],
                   style: TextStyle(color: Colors.white, fontSize: 15),
                 )
               ],

@@ -1,17 +1,32 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:survey_app/modules/survey/detail/controllers/detail_survey_controller.dart';
 import 'package:survey_app/modules/survey/widgets/survey_titik_kamera_card.dart';
+import 'package:survey_app/modules/survey_titik_kamera/form/form_survey_titik_kamera_card.dart';
 
 class DetailSurvey extends StatelessWidget {
-  const DetailSurvey({super.key});
+  final dynamic surveyData;
+  DetailSurvey({super.key, required this.surveyData});
 
   @override
   Widget build(BuildContext context) {
+    DetailSurveyController c =
+        Get.put(DetailSurveyController(surveyData: surveyData));
     return Scaffold(
       backgroundColor: Colors.blueGrey[900],
       appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.blueGrey[900],
+        actions: [
+          IconButton(
+              onPressed: () {
+                c.deleteSurvey(surveyData['Id_Survey']);
+              },
+              icon: Icon(
+                Icons.delete,
+                color: Colors.red,
+              ))
+        ],
         leading: IconButton(
             onPressed: () {
               Get.back();
@@ -34,6 +49,8 @@ class DetailSurvey extends StatelessWidget {
             child: Column(
               children: [
                 TextFormField(
+                  controller: c.nama_projek_input,
+                  style: TextStyle(color: Colors.white),
                   decoration: InputDecoration(
                       hintStyle: TextStyle(color: Colors.white),
                       hintText: 'Nama projek'),
@@ -42,6 +59,8 @@ class DetailSurvey extends StatelessWidget {
                   height: 10,
                 ),
                 TextFormField(
+                  style: TextStyle(color: Colors.white),
+                  controller: c.alamat_input,
                   decoration: InputDecoration(
                       hintStyle: TextStyle(color: Colors.white),
                       hintText: 'Alamat'),
@@ -50,6 +69,8 @@ class DetailSurvey extends StatelessWidget {
                   height: 10,
                 ),
                 TextFormField(
+                  style: TextStyle(color: Colors.white),
+                  controller: c.email_input,
                   decoration: InputDecoration(
                       hintStyle: TextStyle(color: Colors.white),
                       hintText: 'Email'),
@@ -58,6 +79,8 @@ class DetailSurvey extends StatelessWidget {
                   height: 10,
                 ),
                 TextFormField(
+                  style: TextStyle(color: Colors.white),
+                  controller: c.no_telpon_input,
                   decoration: InputDecoration(
                       hintStyle: TextStyle(color: Colors.white),
                       hintText: 'Nomor telpon'),
@@ -66,6 +89,8 @@ class DetailSurvey extends StatelessWidget {
                   height: 10,
                 ),
                 TextFormField(
+                  style: TextStyle(color: Colors.white),
+                  controller: c.status_input,
                   decoration: InputDecoration(
                       hintStyle: TextStyle(color: Colors.white),
                       hintText: 'Status'),
@@ -76,7 +101,10 @@ class DetailSurvey extends StatelessWidget {
                 SizedBox(
                     width: MediaQuery.of(context).size.width,
                     child: ElevatedButton(
-                        onPressed: () {}, child: Text('Kirim Data'))),
+                        onPressed: () {
+                          c.updateSurvey(surveyData['Id_Survey']);
+                        },
+                        child: Text('Kirim Data'))),
               ],
             ),
           ),
@@ -98,7 +126,9 @@ class DetailSurvey extends StatelessWidget {
                 ),
                 IconButton(
                   onPressed: () {
-                    Get.toNamed('/form_titik');
+                    Get.to(FormTitik(
+                      idSurvey: surveyData['Id_Survey'],
+                    ));
                   },
                   icon: Icon(
                     Icons.add,
@@ -110,13 +140,17 @@ class DetailSurvey extends StatelessWidget {
           ),
           Padding(
             padding: EdgeInsets.all(20.0),
-            child: ListView.builder(
-                shrinkWrap: true,
-                physics: NeverScrollableScrollPhysics(),
-                itemCount: 5,
-                itemBuilder: (context, index) {
-                  return TitikCard();
-                }),
+            child: Obx(
+              () => ListView.builder(
+                  shrinkWrap: true,
+                  physics: NeverScrollableScrollPhysics(),
+                  itemCount: c.titikData.length,
+                  itemBuilder: (context, index) {
+                    return TitikCard(
+                      titikData: c.titikData[index],
+                    );
+                  }),
+            ),
           )
         ],
       ),

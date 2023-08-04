@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:survey_app/modules/survey/form/controllers/form_survey_controller.dart';
 
 class FormSurvey extends StatelessWidget {
-  const FormSurvey({super.key});
+  FormSurvey({super.key});
+  FormSurveyController c = Get.put(FormSurveyController());
 
   @override
   Widget build(BuildContext context) {
@@ -31,6 +33,8 @@ class FormSurvey extends StatelessWidget {
         child: ListView(
           children: [
             TextFormField(
+              controller: c.nama_projek_input,
+              style: TextStyle(color: Colors.white),
               decoration: InputDecoration(
                   hintStyle: TextStyle(color: Colors.white),
                   hintText: 'Nama projek'),
@@ -39,6 +43,8 @@ class FormSurvey extends StatelessWidget {
               height: 10,
             ),
             TextFormField(
+              style: TextStyle(color: Colors.white),
+              controller: c.alamat_input,
               decoration: InputDecoration(
                   hintStyle: TextStyle(color: Colors.white),
                   hintText: 'Alamat'),
@@ -47,6 +53,8 @@ class FormSurvey extends StatelessWidget {
               height: 10,
             ),
             TextFormField(
+              style: TextStyle(color: Colors.white),
+              controller: c.email_input,
               decoration: InputDecoration(
                   hintStyle: TextStyle(color: Colors.white), hintText: 'Email'),
             ),
@@ -54,6 +62,8 @@ class FormSurvey extends StatelessWidget {
               height: 10,
             ),
             TextFormField(
+              style: TextStyle(color: Colors.white),
+              controller: c.no_telpon_input,
               decoration: InputDecoration(
                   hintStyle: TextStyle(color: Colors.white),
                   hintText: 'Nomor telpon'),
@@ -62,6 +72,8 @@ class FormSurvey extends StatelessWidget {
               height: 10,
             ),
             TextFormField(
+              style: TextStyle(color: Colors.white),
+              controller: c.status_input,
               decoration: InputDecoration(
                   hintStyle: TextStyle(color: Colors.white),
                   hintText: 'Status'),
@@ -69,7 +81,11 @@ class FormSurvey extends StatelessWidget {
             SizedBox(
               height: 10,
             ),
-            ElevatedButton(onPressed: () {}, child: Text('Kirim Data'))
+            ElevatedButton(
+                onPressed: () {
+                  c.addSurvey();
+                },
+                child: Text('Kirim Data'))
           ],
         ),
       ),

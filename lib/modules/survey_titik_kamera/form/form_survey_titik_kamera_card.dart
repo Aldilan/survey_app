@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:survey_app/modules/survey_titik_kamera/form/controllers/form_survey_titik_kamera.dart';
 
 class FormTitik extends StatelessWidget {
-  const FormTitik({super.key});
+  final int idSurvey;
+  const FormTitik({super.key, required this.idSurvey});
 
   @override
   Widget build(BuildContext context) {
+    FormTitikController c = Get.put(FormTitikController(idSurvey: idSurvey));
     return Scaffold(
       backgroundColor: Colors.blueGrey[900],
       appBar: AppBar(
@@ -31,6 +34,8 @@ class FormTitik extends StatelessWidget {
         child: ListView(
           children: [
             TextFormField(
+              controller: c.judul_input,
+              style: TextStyle(color: Colors.white),
               decoration: InputDecoration(
                   hintStyle: TextStyle(color: Colors.white),
                   hintText: 'Judul Titik'),
@@ -70,7 +75,11 @@ class FormTitik extends StatelessWidget {
                 ),
               ),
             ),
-            ElevatedButton(onPressed: () {}, child: Text('Kirim Data'))
+            ElevatedButton(
+                onPressed: () {
+                  c.addTitik();
+                },
+                child: Text('Kirim Data'))
           ],
         ),
       ),

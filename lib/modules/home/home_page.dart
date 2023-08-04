@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:survey_app/modules/home/controllers/home_controller.dart';
 import 'package:survey_app/modules/home/widgets/survey_card.dart';
 
 class HomePage extends StatelessWidget {
-  const HomePage({super.key});
+  HomePage({super.key});
+  HomeController c = Get.put(HomeController());
 
   @override
   Widget build(BuildContext context) {
@@ -31,11 +33,15 @@ class HomePage extends StatelessWidget {
       ),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
-        child: ListView.builder(
-          itemCount: 5,
-          itemBuilder: (context, index) {
-            return SurveyCard();
-          },
+        child: Obx(
+          () => ListView.builder(
+            itemCount: c.surveysData.length,
+            itemBuilder: (context, index) {
+              return SurveyCard(
+                surveyData: c.surveysData[index],
+              );
+            },
+          ),
         ),
       ),
     );
