@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:survey_app/modules/survey_titik_kamera/form/controllers/form_survey_titik_kamera.dart';
@@ -44,6 +46,9 @@ class FormTitik extends StatelessWidget {
               height: 10,
             ),
             GestureDetector(
+              onTap: () {
+                c.selectPicture(context);
+              },
               child: Container(
                 margin: EdgeInsets.only(bottom: 10),
                 decoration: BoxDecoration(
@@ -52,26 +57,34 @@ class FormTitik extends StatelessWidget {
                 ),
                 padding: EdgeInsets.all(15),
                 width: MediaQuery.of(context).size.width,
-                child: Center(
-                  child: Column(
-                    children: [
-                      Icon(
-                        Icons.photo,
-                        color: Colors.white,
-                        size: MediaQuery.of(context).size.width * 0.2,
-                      ),
-                      SizedBox(
-                        height: 10,
-                      ),
-                      Text(
-                        'Pilih foto',
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600),
-                      )
-                    ],
-                  ),
+                child: Obx(
+                  () => c.selectedPicture.value == null
+                      ? Center(
+                          child: Column(
+                            children: [
+                              Icon(
+                                Icons.photo,
+                                color: Colors.white,
+                                size: MediaQuery.of(context).size.width * 0.2,
+                              ),
+                              SizedBox(
+                                height: 10,
+                              ),
+                              Text(
+                                'Pilih foto',
+                                style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w600),
+                              )
+                            ],
+                          ),
+                        )
+                      : Image.file(
+                          File(c.selectedPicture.value!.path),
+                          fit: BoxFit.cover,
+                          width: MediaQuery.of(context).size.width * 0.21,
+                        ),
                 ),
               ),
             ),

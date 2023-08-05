@@ -13,6 +13,7 @@ class DetailTitikController extends GetxController {
 
   @override
   void onInit() {
+    print(titikData);
     // TODO: implement onInit
     judul_titik_input.text = titikData['Judul_Titik'];
     super.onInit();

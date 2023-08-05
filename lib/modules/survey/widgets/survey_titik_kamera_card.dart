@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:survey_app/modules/globals/api_url.dart';
 import 'package:survey_app/modules/survey_titik_kamera/detail/detail_survey_titik_kamera.dart';
 
 class TitikCard extends StatelessWidget {
@@ -36,7 +37,7 @@ class TitikCard extends StatelessWidget {
             ClipRRect(
               borderRadius: BorderRadius.circular(10),
               child: Image.network(
-                  'https://upload.wikimedia.org/wikipedia/commons/a/a1/Three_Surveillance_cameras.jpg'),
+                  ApiURL.currentImageApiURL + titikData['Foto_Titik']),
             )
           ],
         ),
