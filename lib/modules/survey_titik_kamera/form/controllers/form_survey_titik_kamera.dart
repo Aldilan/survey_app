@@ -12,8 +12,8 @@ class FormTitikController extends GetxController {
 
   final dio.Dio _dio = dio.Dio();
   final picker = ImagePicker();
-  final selectedPicture = Rx<XFile?>(null);
 
+  final selectedPicture = Rx<XFile?>(null);
   TextEditingController judul_input = TextEditingController();
 
   Future<void> selectPicture(context) async {
