@@ -40,6 +40,8 @@ dependencies:
   image_picker: ^0.8.8
   cool_alert: ^2.0.1
   image_cropper: ^5.0.0
+  get_storage: ^2.1.1
+  connectivity: ^3.0.6
 
 dev_dependencies:
   flutter_test:
