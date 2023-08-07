@@ -25,7 +25,6 @@ class DetailSurveyController extends GetxController {
     // TODO: implement onInit
     _openDatabase();
     updateTextField();
-    getTitik();
     super.onInit();
   }
 
@@ -42,8 +41,15 @@ class DetailSurveyController extends GetxController {
         await db.execute(
           'CREATE TABLE IF NOT EXISTS tb_survey (Id_Survey INTEGER PRIMARY KEY, Nama_Projek TEXT, Alamat TEXT, Email TEXT, Nomor_Telpon, TEXT, Status_Survey TEXT, Status_Sumber Text )',
         );
+        // Buat tabel tb_survey_titik_kamera
+        await db.execute(
+          'CREATE TABLE IF NOT EXISTS tb_survey_titik_kamera (Id_Survey_Titik_Kamera INTEGER PRIMARY KEY, Id_Survey TEXT, Judul_Titik TEXT, Foto_Titik TEXT, Status_Sumber TEXT )',
+        );
       },
     );
+    if (_database != null) {
+      getTitik();
+    }
   }
 
   void updateTextField() {
@@ -166,19 +172,27 @@ class DetailSurveyController extends GetxController {
   }
 
   Future<void> getTitik() async {
-    try {
-      final response = await _dio.post(
-        ApiURL.currentApiURL + 'surveys_titik_kamera/survey',
-        data: {"survey_id": surveyData['Id_Survey']},
-      );
-      print(response.data);
-      if (response.statusCode == 200) {
-        titikData.value = response.data;
-      } else {
-        print('Request failed with status code: ${response.statusCode}');
-      }
-    } catch (e) {
-      print('Error: $e');
-    }
+    List<Map<String, dynamic>> dataTitik = await _database.query(
+      'tb_survey_titik_kamera',
+      where: 'Status_Sumber != ? AND Id_Survey = ?',
+      whereArgs: ['Delete', surveyData['Id_Survey']],
+    );
+    titikData.value = dataTitik;
+
+    print(dataTitik);
+    // try {
+    //   final response = await _dio.post(
+    //     ApiURL.currentApiURL + 'surveys_titik_kamera/survey',
+    //     data: {"survey_id": surveyData['Id_Survey']},
+    //   );
+    //   print(response.data);
+    //   if (response.statusCode == 200) {
+    //     titikData.value = response.data;
+    //   } else {
+    //     print('Request failed with status code: ${response.statusCode}');
+    //   }
+    // } catch (e) {
+    //   print('Error: $e');
+    // }
   }
 }

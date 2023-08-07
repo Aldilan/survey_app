@@ -26,9 +26,14 @@ class HomeController extends GetxController {
       path,
       version: 1,
       onCreate: (Database db, int version) async {
-        // Buat tabel di database jika belum ada
+        // Buat tabel tb_survey
         await db.execute(
           'CREATE TABLE IF NOT EXISTS tb_survey (Id_Survey INTEGER PRIMARY KEY, Nama_Projek TEXT, Alamat TEXT, Email TEXT, Nomor_Telpon TEXT, Status_Survey TEXT, Status_Sumber TEXT )',
+        );
+
+        // Buat tabel tb_survey_titik_kamera
+        await db.execute(
+          'CREATE TABLE IF NOT EXISTS tb_survey_titik_kamera (Id_Survey_Titik_Kamera INTEGER PRIMARY KEY, Id_Survey TEXT, Judul_Titik TEXT, Foto_Titik TEXT, Status_Sumber TEXT )',
         );
       },
     );
@@ -54,61 +59,91 @@ class HomeController extends GetxController {
   }
 
   Future<void> getSurveysData() async {
-    List<Map<String, dynamic>> localDataNewInsert = await _database.query(
+    refreshSurveyData();
+    List<Map<String, dynamic>> localDataNewDeleteTitik = await _database.query(
+      'tb_survey_titik_kamera',
+      where: 'Status_Sumber = ?',
+      whereArgs: ['Delete'],
+    );
+    for (var i = 0; i < localDataNewDeleteTitik.length; i++) {
+      deleteTitikCloud(localDataNewDeleteTitik[i]['Id_Survey_Titik_Kamera']);
+    }
+    await _database.delete('tb_survey');
+    await _database.delete('tb_survey_titik_kamera');
+    try {
+      final responseSurvey = await _dio.get(ApiURL.currentApiURL + 'surveys');
+      if (responseSurvey.statusCode == 200) {
+        surveysData.value = responseSurvey.data;
+        for (var i = 0; i < surveysData.length; i++) {
+          addSurveyLocal(
+              responseSurvey.data[i]['Id_Survey'],
+              responseSurvey.data[i]['Nama_Projek'],
+              responseSurvey.data[i]['Alamat'],
+              responseSurvey.data[i]['Email'],
+              responseSurvey.data[i]['Nomor_Telpon'],
+              responseSurvey.data[i]['Status_Survey'],
+              'Import');
+        }
+      } else {
+        print('Request failed with status code: ${responseSurvey.statusCode}');
+      }
+    } catch (e) {
+      print('Error: $e');
+    }
+    try {
+      final responseTitik =
+          await _dio.get(ApiURL.currentApiURL + 'surveys_titik_kamera');
+      if (responseTitik.statusCode == 200) {
+        for (var i = 0; i < responseTitik.data.length; i++) {
+          addTitikLocal(
+              responseTitik.data[i]['Id_Survey_Titik_Kamera'],
+              responseTitik.data[i]['Id_Survey'],
+              responseTitik.data[i]['Judul_Titik'],
+              responseTitik.data[i]['Foto_Titik'],
+              'Import');
+        }
+      }
+    } catch (e) {
+      print('Error: $e');
+    }
+  }
+
+  Future<void> refreshSurveyData() async {
+    List<Map<String, dynamic>> localDataNewInsertSurvey = await _database.query(
       'tb_survey',
       where: 'Status_Sumber = ?',
       whereArgs: ['Create'],
     );
-    List<Map<String, dynamic>> localDataNewDelete = await _database.query(
+    List<Map<String, dynamic>> localDataNewDeleteSurvey = await _database.query(
       'tb_survey',
       where: 'Status_Sumber = ?',
       whereArgs: ['Delete'],
     );
-    List<Map<String, dynamic>> localDataNewUpdate = await _database.query(
+    List<Map<String, dynamic>> localDataNewUpdateSurvey = await _database.query(
       'tb_survey',
       where: 'Status_Sumber = ?',
       whereArgs: ['Update'],
     );
-    for (var i = 0; i < localDataNewDelete.length; i++) {
-      deleteSurveyCloud(localDataNewDelete[i]['Id_Survey']);
+
+    for (var i = 0; i < localDataNewDeleteSurvey.length; i++) {
+      deleteSurveyCloud(localDataNewDeleteSurvey[i]['Id_Survey']);
     }
-    for (var i = 0; i < localDataNewUpdate.length; i++) {
+    for (var i = 0; i < localDataNewUpdateSurvey.length; i++) {
       updateSurveyCloud(
-          localDataNewUpdate[i]['Id_Survey'],
-          localDataNewUpdate[i]['Nama_Projek'],
-          localDataNewUpdate[i]['Alamat'],
-          localDataNewUpdate[i]['Email'],
-          localDataNewUpdate[i]['Nomor_Telpon'],
-          localDataNewUpdate[i]['Status_Survey']);
+          localDataNewUpdateSurvey[i]['Id_Survey'],
+          localDataNewUpdateSurvey[i]['Nama_Projek'],
+          localDataNewUpdateSurvey[i]['Alamat'],
+          localDataNewUpdateSurvey[i]['Email'],
+          localDataNewUpdateSurvey[i]['Nomor_Telpon'],
+          localDataNewUpdateSurvey[i]['Status_Survey']);
     }
-    for (var i = 0; i < localDataNewInsert.length; i++) {
+    for (var i = 0; i < localDataNewInsertSurvey.length; i++) {
       addSurveyCloud(
-          localDataNewInsert[i]['Nama_Projek'],
-          localDataNewInsert[i]['Alamat'],
-          localDataNewInsert[i]['Email'],
-          localDataNewInsert[i]['Nomor_Telpon'],
-          localDataNewInsert[i]['Status_Survey']);
-    }
-    await _database.delete('tb_survey');
-    try {
-      final response = await _dio.get(ApiURL.currentApiURL + 'surveys');
-      if (response.statusCode == 200) {
-        surveysData.value = response.data;
-        for (var i = 0; i < surveysData.length; i++) {
-          addSurveyLocal(
-              response.data[i]['Id_Survey'],
-              response.data[i]['Nama_Projek'],
-              response.data[i]['Alamat'],
-              response.data[i]['Email'],
-              response.data[i]['Nomor_Telpon'],
-              response.data[i]['Status_Survey'],
-              'Import');
-        }
-      } else {
-        print('Request failed with status code: ${response.statusCode}');
-      }
-    } catch (e) {
-      print('Error: $e');
+          localDataNewInsertSurvey[i]['Nama_Projek'],
+          localDataNewInsertSurvey[i]['Alamat'],
+          localDataNewInsertSurvey[i]['Email'],
+          localDataNewInsertSurvey[i]['Nomor_Telpon'],
+          localDataNewInsertSurvey[i]['Status_Survey']);
     }
   }
 
@@ -155,12 +190,43 @@ class HomeController extends GetxController {
     );
   }
 
+  Future<void> addTitikLocal(id_survey_titik_kamera, id_survey,
+      String judul_titik, String foto_titik, String status_sumber) async {
+    if (_database == null) {
+      await _openDatabase();
+    }
+    await _database.insert(
+      'tb_survey_titik_kamera',
+      {
+        'Id_Survey_Titik_Kamera': id_survey_titik_kamera,
+        'Id_Survey': id_survey,
+        'Judul_Titik': judul_titik,
+        'Foto_Titik': foto_titik,
+        'Status_Sumber': status_sumber
+      },
+    );
+  }
+
   Future<void> deleteSurveyCloud(id_survey) async {
     try {
       final response = await _dio.delete(
         ApiURL.currentApiURL + 'surveys',
         data: {"survey_id": id_survey},
       );
+    } catch (e) {
+      print('object');
+    }
+  }
+
+  Future<void> deleteTitikCloud(id_survey_titik_kamera) async {
+    try {
+      final response = await _dio.delete(
+        ApiURL.currentApiURL + 'surveys_titik_kamera',
+        data: {"survey_titik_kamera_id": id_survey_titik_kamera},
+      );
+      if (response.statusCode == 204) {
+        Get.offAllNamed('/');
+      }
     } catch (e) {
       print('object');
     }

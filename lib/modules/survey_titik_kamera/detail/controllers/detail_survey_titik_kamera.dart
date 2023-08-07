@@ -1,14 +1,18 @@
+import 'package:connectivity/connectivity.dart';
 import 'package:cool_alert/cool_alert.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:sqflite/sqflite.dart';
 import 'package:survey_app/modules/globals/api_url.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:dio/dio.dart' as dio;
 import 'package:http_parser/http_parser.dart' hide FormData;
+import 'package:path/path.dart';
 
 class DetailTitikController extends GetxController {
   final dynamic titikData;
   DetailTitikController({required this.titikData});
+  late Database _database;
 
   final dio.Dio _dio = dio.Dio();
   final picker = ImagePicker();
@@ -21,7 +25,29 @@ class DetailTitikController extends GetxController {
     print(titikData);
     // TODO: implement onInit
     judul_titik_input.text = titikData['Judul_Titik'];
+    _openDatabase();
     super.onInit();
+  }
+
+  Future<void> _openDatabase() async {
+    // Buka atau buat database di path yang ditentukan
+    String databasesPath = await getDatabasesPath();
+    String path = join(databasesPath, 'my_database.db');
+
+    _database = await openDatabase(
+      path,
+      version: 1,
+      onCreate: (Database db, int version) async {
+        // Buat tabel di database jika belum ada
+        await db.execute(
+          'CREATE TABLE IF NOT EXISTS tb_survey (Id_Survey INTEGER PRIMARY KEY, Nama_Projek TEXT, Alamat TEXT, Email TEXT, Nomor_Telpon, TEXT, Status_Survey TEXT, Status_Sumber Text )',
+        );
+        // Buat tabel tb_survey_titik_kamera
+        await db.execute(
+          'CREATE TABLE IF NOT EXISTS tb_survey_titik_kamera (Id_Survey_Titik_Kamera INTEGER PRIMARY KEY, Id_Survey TEXT, Judul_Titik TEXT, Foto_Titik TEXT, Status_Sumber TEXT )',
+        );
+      },
+    );
   }
 
   Future<void> selectPicture(context) async {
@@ -94,6 +120,34 @@ class DetailTitikController extends GetxController {
   }
 
   Future<void> deleteTitik(id_survey_titik_kamera) async {
+    var connectivityResult = await (Connectivity().checkConnectivity());
+    if (connectivityResult == ConnectivityResult.none) {
+      deleteTitikLocal(id_survey_titik_kamera);
+    } else if (connectivityResult == ConnectivityResult.mobile) {
+      deleteTitikCloud(id_survey_titik_kamera);
+    } else if (connectivityResult == ConnectivityResult.wifi) {
+      deleteTitikCloud(id_survey_titik_kamera);
+    }
+  }
+
+  Future<void> deleteTitikLocal(id_survey_titik_kamera) async {
+    await _database.update(
+      'tb_survey_titik_kamera',
+      {
+        'Status_Sumber': 'Delete',
+      },
+      where: 'Id_Survey_Titik_Kamera = ?',
+      whereArgs: [id_survey_titik_kamera],
+    );
+    List<Map<String, dynamic>> localDataNewDelete = await _database.query(
+      'tb_survey_titik_kamera',
+      where: 'Id_Survey_Titik_Kamera = ?',
+      whereArgs: [id_survey_titik_kamera],
+    );
+    Get.offAllNamed('/');
+  }
+
+  Future<void> deleteTitikCloud(id_survey_titik_kamera) async {
     try {
       final response = await _dio.delete(
         ApiURL.currentApiURL + 'surveys_titik_kamera',

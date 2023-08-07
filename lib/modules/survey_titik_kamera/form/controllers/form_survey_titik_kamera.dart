@@ -4,10 +4,13 @@ import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:dio/dio.dart' as dio;
 import 'package:http_parser/http_parser.dart' hide FormData;
+import 'package:sqflite/sqflite.dart';
+import 'package:path/path.dart';
 import 'package:survey_app/modules/globals/api_url.dart';
 
 class FormTitikController extends GetxController {
   final int idSurvey;
+  late Database _database;
   FormTitikController({required this.idSurvey});
 
   final dio.Dio _dio = dio.Dio();
@@ -15,6 +18,33 @@ class FormTitikController extends GetxController {
 
   final selectedPicture = Rx<XFile?>(null);
   TextEditingController judul_input = TextEditingController();
+
+  @override
+  void onInit() {
+    // TODO: implement onInit
+    _openDatabase();
+    super.onInit();
+  }
+
+  Future<void> _openDatabase() async {
+    // Buka atau buat database di path yang ditentukan
+    String databasesPath = await getDatabasesPath();
+    String path = join(databasesPath, 'my_database.db');
+
+    _database = await openDatabase(
+      path,
+      version: 1,
+      onCreate: (Database db, int version) async {
+        // Buat tabel di database jika belum ada
+        await db.execute(
+          'CREATE TABLE IF NOT EXISTS tb_survey (Id_Survey INTEGER PRIMARY KEY, Nama_Projek TEXT, Alamat TEXT, Email TEXT, Nomor_Telpon, TEXT, Status_Survey TEXT, Status_Sumber Text )',
+        );
+        await db.execute(
+          'CREATE TABLE IF NOT EXISTS tb_survey_titik_kamera (Id_Survey_Titik_Kamera INTEGER PRIMARY KEY, Id_Survey TEXT, Judul_Titik TEXT, Foto_Titik TEXT, Status_Sumber TEXT )',
+        );
+      },
+    );
+  }
 
   Future<void> selectPicture(context) async {
     CoolAlert.show(
