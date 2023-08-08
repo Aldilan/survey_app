@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:survey_app/modules/globals/api_url.dart';
 import 'package:survey_app/modules/survey_titik_kamera/detail/detail_survey_titik_kamera.dart';
+import 'package:survey_app/widgets/imageNotFoundWidget.dart';
 
 class TitikCard extends StatelessWidget {
   final dynamic titikData;
@@ -41,7 +42,13 @@ class TitikCard extends StatelessWidget {
                 child: titikData['Foto_Titik'].toString() == 'null'
                     ? Image.file(File(titikData['Foto_Local']))
                     : Image.network(
-                        ApiURL.currentImageApiURL + titikData['Foto_Titik']))
+                        ApiURL.currentImageApiURL + titikData['Foto_Titik'],
+                        errorBuilder: (BuildContext context, Object exception,
+                            StackTrace? stackTrace) {
+                          // Konten yang akan ditampilkan jika gambar tidak ditemukan
+                          return ImageNotFoundWidget();
+                        },
+                      ))
           ],
         ),
       ),

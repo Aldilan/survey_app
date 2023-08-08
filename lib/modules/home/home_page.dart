@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:survey_app/modules/home/controllers/home_controller.dart';
 import 'package:survey_app/modules/home/widgets/survey_card.dart';
+import 'package:survey_app/widgets/circleLoadingWidget.dart';
 
 class HomePage extends StatelessWidget {
   HomePage({super.key});
@@ -39,11 +41,13 @@ class HomePage extends StatelessWidget {
           padding: const EdgeInsets.all(20.0),
           child: Obx(
             () => ListView.builder(
-              itemCount: c.surveysData.length,
+              itemCount: c.surveysData.length == 0 ? 1 : c.surveysData.length,
               itemBuilder: (context, index) {
-                return SurveyCard(
-                  surveyData: c.surveysData[index],
-                );
+                return c.surveysData.length == 0
+                    ? CircleLoadingWidget()
+                    : SurveyCard(
+                        surveyData: c.surveysData[index],
+                      );
               },
             ),
           ),

@@ -62,26 +62,14 @@ class HomeController extends GetxController {
   }
 
   Future<void> getSurveysData() async {
-    List<Map<String, dynamic>> localDataNewUpdateTitik = await _database.query(
-      'tb_survey_titik_kamera',
-      where: 'Status_Sumber = ?',
-      whereArgs: ['Update'],
-    );
-    for (var i = 0; i < localDataNewUpdateTitik.length; i++) {
-      updateTitikCloud(
-          localDataNewUpdateTitik[i]['Id_Survey_Titik_Kamera'],
-          localDataNewUpdateTitik[i]['Id_Survey'],
-          localDataNewUpdateTitik[i]['Judul_Titik'],
-          localDataNewUpdateTitik[i]['Foto_Local']);
-    }
     // List<Map<String, dynamic>> localDataNewUpdateTitik = await _database.query(
     //   'tb_survey_titik_kamera',
     //   where: 'Status_Sumber = ?',
     //   whereArgs: ['Update'],
     // );
     // return print(localDataNewUpdateTitik);
-    refreshTitikData();
-    refreshSurveyData();
+    await refreshTitikData();
+    await refreshSurveyData();
     await _database.delete('tb_survey');
     await _database.delete('tb_survey_titik_kamera');
     try {
@@ -123,6 +111,18 @@ class HomeController extends GetxController {
   }
 
   Future<void> refreshTitikData() async {
+    List<Map<String, dynamic>> localDataNewUpdateTitik = await _database.query(
+      'tb_survey_titik_kamera',
+      where: 'Status_Sumber = ?',
+      whereArgs: ['Update'],
+    );
+    for (var i = 0; i < localDataNewUpdateTitik.length; i++) {
+      await updateTitikCloud(
+          localDataNewUpdateTitik[i]['Id_Survey_Titik_Kamera'],
+          localDataNewUpdateTitik[i]['Id_Survey'],
+          localDataNewUpdateTitik[i]['Judul_Titik'],
+          localDataNewUpdateTitik[i]['Foto_Local']);
+    }
     List<Map<String, dynamic>> localDataNewDeleteTitik = await _database.query(
       'tb_survey_titik_kamera',
       where: 'Status_Sumber = ?',
@@ -133,11 +133,6 @@ class HomeController extends GetxController {
       where: 'Status_Sumber = ?',
       whereArgs: ['Create'],
     );
-    List<Map<String, dynamic>> localDataNewUpdateTitik = await _database.query(
-      'tb_survey_titik_kamera',
-      where: 'Status_Sumber = ?',
-      whereArgs: ['Update'],
-    );
     print(localDataNewUpdateTitik);
     for (var i = 0; i < localDataNewInsertTitik.length; i++) {
       addTitikCloud(
@@ -145,7 +140,6 @@ class HomeController extends GetxController {
           localDataNewInsertTitik[i]['Judul_Titik'],
           localDataNewInsertTitik[i]['Foto_Local']);
     }
-    for (var i = 0; i < localDataNewUpdateTitik.length; i++) {}
     for (var i = 0; i < localDataNewDeleteTitik.length; i++) {
       deleteTitikCloud(localDataNewDeleteTitik[i]['Id_Survey_Titik_Kamera']);
     }
