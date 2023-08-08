@@ -37,7 +37,7 @@ class FormSurveyController extends GetxController {
           'CREATE TABLE IF NOT EXISTS tb_survey (Id_Survey INTEGER PRIMARY KEY, Nama_Projek TEXT, Alamat TEXT, Email TEXT, Nomor_Telpon, TEXT, Status_Survey TEXT, Status_Sumber Text )',
         );
         await db.execute(
-          'CREATE TABLE IF NOT EXISTS tb_survey_titik_kamera (Id_Survey_Titik_Kamera INTEGER PRIMARY KEY, Id_Survey TEXT, Judul_Titik TEXT, Foto_Titik TEXT, Status_Sumber TEXT )',
+          'CREATE TABLE IF NOT EXISTS tb_survey_titik_kamera (Id_Survey_Titik_Kamera INTEGER PRIMARY KEY, Id_Survey TEXT, Judul_Titik TEXT, Foto_Titik TEXT, Foto_Local TEXT, Status_Sumber TEXT )',
         );
       },
     );

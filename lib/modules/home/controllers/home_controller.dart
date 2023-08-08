@@ -1,9 +1,12 @@
 import 'package:get/get.dart';
 import 'package:dio/dio.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:survey_app/modules/globals/api_url.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
+import 'package:http_parser/http_parser.dart' hide FormData;
+import 'package:dio/dio.dart' as dio;
 
 class HomeController extends GetxController {
   final Dio _dio = Dio();
@@ -33,7 +36,7 @@ class HomeController extends GetxController {
 
         // Buat tabel tb_survey_titik_kamera
         await db.execute(
-          'CREATE TABLE IF NOT EXISTS tb_survey_titik_kamera (Id_Survey_Titik_Kamera INTEGER PRIMARY KEY, Id_Survey TEXT, Judul_Titik TEXT, Foto_Titik TEXT, Status_Sumber TEXT )',
+          'CREATE TABLE IF NOT EXISTS tb_survey_titik_kamera (Id_Survey_Titik_Kamera INTEGER PRIMARY KEY, Id_Survey TEXT, Judul_Titik TEXT, Foto_Titik TEXT, Foto_Local TEXT, Status_Sumber TEXT )',
         );
       },
     );
@@ -59,15 +62,26 @@ class HomeController extends GetxController {
   }
 
   Future<void> getSurveysData() async {
-    refreshSurveyData();
-    List<Map<String, dynamic>> localDataNewDeleteTitik = await _database.query(
+    List<Map<String, dynamic>> localDataNewUpdateTitik = await _database.query(
       'tb_survey_titik_kamera',
       where: 'Status_Sumber = ?',
-      whereArgs: ['Delete'],
+      whereArgs: ['Update'],
     );
-    for (var i = 0; i < localDataNewDeleteTitik.length; i++) {
-      deleteTitikCloud(localDataNewDeleteTitik[i]['Id_Survey_Titik_Kamera']);
+    for (var i = 0; i < localDataNewUpdateTitik.length; i++) {
+      updateTitikCloud(
+          localDataNewUpdateTitik[i]['Id_Survey_Titik_Kamera'],
+          localDataNewUpdateTitik[i]['Id_Survey'],
+          localDataNewUpdateTitik[i]['Judul_Titik'],
+          localDataNewUpdateTitik[i]['Foto_Local']);
     }
+    // List<Map<String, dynamic>> localDataNewUpdateTitik = await _database.query(
+    //   'tb_survey_titik_kamera',
+    //   where: 'Status_Sumber = ?',
+    //   whereArgs: ['Update'],
+    // );
+    // return print(localDataNewUpdateTitik);
+    refreshTitikData();
+    refreshSurveyData();
     await _database.delete('tb_survey');
     await _database.delete('tb_survey_titik_kamera');
     try {
@@ -108,6 +122,35 @@ class HomeController extends GetxController {
     }
   }
 
+  Future<void> refreshTitikData() async {
+    List<Map<String, dynamic>> localDataNewDeleteTitik = await _database.query(
+      'tb_survey_titik_kamera',
+      where: 'Status_Sumber = ?',
+      whereArgs: ['Delete'],
+    );
+    List<Map<String, dynamic>> localDataNewInsertTitik = await _database.query(
+      'tb_survey_titik_kamera',
+      where: 'Status_Sumber = ?',
+      whereArgs: ['Create'],
+    );
+    List<Map<String, dynamic>> localDataNewUpdateTitik = await _database.query(
+      'tb_survey_titik_kamera',
+      where: 'Status_Sumber = ?',
+      whereArgs: ['Update'],
+    );
+    print(localDataNewUpdateTitik);
+    for (var i = 0; i < localDataNewInsertTitik.length; i++) {
+      addTitikCloud(
+          localDataNewInsertTitik[i]['Id_Survey'],
+          localDataNewInsertTitik[i]['Judul_Titik'],
+          localDataNewInsertTitik[i]['Foto_Local']);
+    }
+    for (var i = 0; i < localDataNewUpdateTitik.length; i++) {}
+    for (var i = 0; i < localDataNewDeleteTitik.length; i++) {
+      deleteTitikCloud(localDataNewDeleteTitik[i]['Id_Survey_Titik_Kamera']);
+    }
+  }
+
   Future<void> refreshSurveyData() async {
     List<Map<String, dynamic>> localDataNewInsertSurvey = await _database.query(
       'tb_survey',
@@ -144,6 +187,82 @@ class HomeController extends GetxController {
           localDataNewInsertSurvey[i]['Email'],
           localDataNewInsertSurvey[i]['Nomor_Telpon'],
           localDataNewInsertSurvey[i]['Status_Survey']);
+    }
+  }
+
+  Future<void> updateTitikCloud(id_survey_titik_kamera, id_survey,
+      String judul_titik, String foto_local) async {
+    print(foto_local);
+
+    XFile localPhoto = XFile(foto_local);
+    var selectedPicture = Rx<XFile?>(localPhoto);
+    try {
+      String fileExtension =
+          selectedPicture.value!.path.split('.').last.toLowerCase();
+      String filename = 'image.$fileExtension';
+      MediaType contentType =
+          MediaType('image', fileExtension == 'png' ? 'png' : 'jpeg');
+      final formData = dio.FormData.fromMap({
+        'image': await dio.MultipartFile.fromFile(
+          selectedPicture.value!.path,
+          filename: filename,
+          contentType: contentType,
+        ),
+        'id_survey_titik_kamera': id_survey_titik_kamera,
+        'id_survey': id_survey,
+        'judul_titik': judul_titik,
+      });
+
+      final response = await _dio.put(
+        ApiURL.currentApiURL + 'surveys_titik_kamera',
+        data: formData,
+      );
+
+      print(response.statusCode);
+      if (response.statusCode == 200) {
+      } else {
+        print('Gagal menambahkan titik survey. Status: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error: $e');
+    }
+  }
+
+  Future<void> addTitikCloud(
+      id_survey, String judul_titik, String foto_local) async {
+    print(foto_local);
+
+    XFile localPhoto = XFile(foto_local);
+    var selectedPicture = Rx<XFile?>(localPhoto);
+    try {
+      String fileExtension =
+          selectedPicture.value!.path.split('.').last.toLowerCase();
+      String filename = 'image.$fileExtension';
+      MediaType contentType =
+          MediaType('image', fileExtension == 'png' ? 'png' : 'jpeg');
+
+      final formData = dio.FormData.fromMap({
+        'image': await dio.MultipartFile.fromFile(
+          selectedPicture.value!.path,
+          filename: filename,
+          contentType: contentType,
+        ),
+        'id_survey': id_survey,
+        'judul_titik': judul_titik,
+      });
+
+      final response = await _dio.post(
+        ApiURL.currentApiURL + 'surveys_titik_kamera',
+        data: formData,
+      );
+
+      print(response.statusCode);
+      if (response.statusCode == 201) {
+      } else {
+        print('Gagal menambahkan titik survey. Status: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error: $e');
     }
   }
 
@@ -224,9 +343,7 @@ class HomeController extends GetxController {
         ApiURL.currentApiURL + 'surveys_titik_kamera',
         data: {"survey_titik_kamera_id": id_survey_titik_kamera},
       );
-      if (response.statusCode == 204) {
-        Get.offAllNamed('/');
-      }
+      if (response.statusCode == 204) {}
     } catch (e) {
       print('object');
     }

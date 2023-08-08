@@ -31,16 +31,21 @@ class HomePage extends StatelessWidget {
               ))
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Obx(
-          () => ListView.builder(
-            itemCount: c.surveysData.length,
-            itemBuilder: (context, index) {
-              return SurveyCard(
-                surveyData: c.surveysData[index],
-              );
-            },
+      body: RefreshIndicator(
+        onRefresh: () async {
+          Get.offAllNamed('/');
+        },
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Obx(
+            () => ListView.builder(
+              itemCount: c.surveysData.length,
+              itemBuilder: (context, index) {
+                return SurveyCard(
+                  surveyData: c.surveysData[index],
+                );
+              },
+            ),
           ),
         ),
       ),

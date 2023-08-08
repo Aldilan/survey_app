@@ -1,3 +1,5 @@
+import 'dart:io';
+import 'package:connectivity/connectivity.dart';
 import 'package:cool_alert/cool_alert.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -7,6 +9,7 @@ import 'package:http_parser/http_parser.dart' hide FormData;
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'package:survey_app/modules/globals/api_url.dart';
+import 'package:path_provider/path_provider.dart';
 
 class FormTitikController extends GetxController {
   final int idSurvey;
@@ -40,7 +43,7 @@ class FormTitikController extends GetxController {
           'CREATE TABLE IF NOT EXISTS tb_survey (Id_Survey INTEGER PRIMARY KEY, Nama_Projek TEXT, Alamat TEXT, Email TEXT, Nomor_Telpon, TEXT, Status_Survey TEXT, Status_Sumber Text )',
         );
         await db.execute(
-          'CREATE TABLE IF NOT EXISTS tb_survey_titik_kamera (Id_Survey_Titik_Kamera INTEGER PRIMARY KEY, Id_Survey TEXT, Judul_Titik TEXT, Foto_Titik TEXT, Status_Sumber TEXT )',
+          'CREATE TABLE IF NOT EXISTS tb_survey_titik_kamera (Id_Survey_Titik_Kamera INTEGER PRIMARY KEY, Id_Survey TEXT, Judul_Titik TEXT, Foto_Titik TEXT, Foto_Local TEXT, Status_Sumber TEXT )',
         );
       },
     );
@@ -82,6 +85,44 @@ class FormTitikController extends GetxController {
   }
 
   Future<void> addTitik() async {
+    var connectivityResult = await (Connectivity().checkConnectivity());
+    if (connectivityResult == ConnectivityResult.none) {
+      addTitikLocal();
+    } else if (connectivityResult == ConnectivityResult.mobile) {
+      addTitikCloud();
+    } else if (connectivityResult == ConnectivityResult.wifi) {
+      addTitikCloud();
+    }
+  }
+
+  Future<void> addTitikLocal() async {
+    if (selectedPicture.value != null) {
+      XFile? imageFile = selectedPicture.value;
+      Directory appDir = await getApplicationDocumentsDirectory();
+      String fileName = imageFile!.path.split('/').last;
+      String filePath = '${appDir.path}/$fileName';
+      File file = File(imageFile.path);
+      await file.copy(filePath);
+
+      print(imageFile.path);
+
+      await _database.insert(
+        'tb_survey_titik_kamera',
+        {
+          'Id_Survey': idSurvey,
+          'Judul_Titik': judul_input.text,
+          'Foto_Titik': 'null',
+          'Foto_Local': imageFile.path,
+          'Status_Sumber': 'Create'
+        },
+      );
+      Get.offAllNamed('/');
+    } else {
+      print('Tidak ada gambar dipilih.');
+    }
+  }
+
+  Future<void> addTitikCloud() async {
     try {
       String fileExtension =
           selectedPicture.value!.path.split('.').last.toLowerCase();

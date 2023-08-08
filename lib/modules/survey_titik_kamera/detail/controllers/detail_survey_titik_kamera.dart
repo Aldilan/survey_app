@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:connectivity/connectivity.dart';
 import 'package:cool_alert/cool_alert.dart';
 import 'package:flutter/material.dart';
@@ -8,6 +10,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:dio/dio.dart' as dio;
 import 'package:http_parser/http_parser.dart' hide FormData;
 import 'package:path/path.dart';
+import 'package:path_provider/path_provider.dart';
 
 class DetailTitikController extends GetxController {
   final dynamic titikData;
@@ -44,7 +47,7 @@ class DetailTitikController extends GetxController {
         );
         // Buat tabel tb_survey_titik_kamera
         await db.execute(
-          'CREATE TABLE IF NOT EXISTS tb_survey_titik_kamera (Id_Survey_Titik_Kamera INTEGER PRIMARY KEY, Id_Survey TEXT, Judul_Titik TEXT, Foto_Titik TEXT, Status_Sumber TEXT )',
+          'CREATE TABLE IF NOT EXISTS tb_survey_titik_kamera (Id_Survey_Titik_Kamera INTEGER PRIMARY KEY, Id_Survey TEXT, Judul_Titik TEXT, Foto_Titik TEXT, Foto_Local TEXT, Status_Sumber TEXT )',
         );
       },
     );
@@ -86,6 +89,40 @@ class DetailTitikController extends GetxController {
   }
 
   Future<void> updateTitik() async {
+    var connectivityResult = await (Connectivity().checkConnectivity());
+    if (connectivityResult == ConnectivityResult.none) {
+      updateTitikLocal();
+    } else if (connectivityResult == ConnectivityResult.mobile) {
+      updateTitikCloud();
+    } else if (connectivityResult == ConnectivityResult.wifi) {
+      updateTitikCloud();
+    }
+  }
+
+  Future<void> updateTitikLocal() async {
+    XFile? imageFile = selectedPicture.value;
+    Directory appDir = await getApplicationDocumentsDirectory();
+    String fileName = imageFile!.path.split('/').last;
+    String filePath = '${appDir.path}/$fileName';
+    File file = File(imageFile.path);
+    await file.copy(filePath);
+    await _database.update(
+      'tb_survey_titik_kamera',
+      {
+        'Judul_Titik': judul_titik_input.text,
+        'Foto_Titik': 'null',
+        'Foto_Local': imageFile.path,
+        'Status_Sumber': 'Update',
+      },
+      where: 'Id_Survey_Titik_Kamera = ?',
+      whereArgs: [
+        titikData['Id_Survey_Titik_Kamera'],
+      ],
+    );
+    Get.offAllNamed('/');
+  }
+
+  Future<void> updateTitikCloud() async {
     try {
       String fileExtension =
           selectedPicture.value!.path.split('.').last.toLowerCase();

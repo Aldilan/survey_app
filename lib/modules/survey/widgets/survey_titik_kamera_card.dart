@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:survey_app/modules/globals/api_url.dart';
@@ -25,7 +27,7 @@ class TitikCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              titikData['Judul_Titik'],
+              titikData['Judul_Titik'].toString(),
               style: TextStyle(
                   color: Colors.white,
                   fontSize: 18,
@@ -35,10 +37,11 @@ class TitikCard extends StatelessWidget {
               height: 10,
             ),
             ClipRRect(
-              borderRadius: BorderRadius.circular(10),
-              child: Image.network(
-                  ApiURL.currentImageApiURL + titikData['Foto_Titik']),
-            )
+                borderRadius: BorderRadius.circular(10),
+                child: titikData['Foto_Titik'].toString() == 'null'
+                    ? Image.file(File(titikData['Foto_Local']))
+                    : Image.network(
+                        ApiURL.currentImageApiURL + titikData['Foto_Titik']))
           ],
         ),
       ),
